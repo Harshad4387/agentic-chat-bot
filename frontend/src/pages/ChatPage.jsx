@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import React, { useState, useEffect } from 'react'
 // import VoiceInput from '../components/VoiceInput'
 // import MessageBubble from '../components/MessageBubble'
@@ -139,6 +140,9 @@
 // }
 
 import React, { useState, useEffect } from 'react'
+=======
+import React, { useState, useRef, useEffect } from 'react'
+>>>>>>> cd8bbc9407d3aa9318ab6160642ae410f1b7da31
 import VoiceInput from '../components/VoiceInput'
 import MessageBubble from '../components/MessageBubble'
 import { sendChatMessage } from '../utils/api'
@@ -149,6 +153,7 @@ export default function ChatPage() {
   const [chat, setChat] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+<<<<<<< HEAD
   const [voices, setVoices] = useState([])
   const [userLang, setUserLang] = useState('en')
 
@@ -160,6 +165,26 @@ export default function ChatPage() {
         clearInterval(interval)
       }
     }, 200)
+=======
+  const voiceRef = useRef(null)
+
+  // On mount, select the best Indian English female voice
+  useEffect(() => {
+    const setVoice = () => {
+      const voices = window.speechSynthesis.getVoices()
+      // Try to find a female Indian English voice
+      let femaleVoice = voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
+      // If not found, pick any Indian English voice
+      if (!femaleVoice) femaleVoice = voices.find(v => v.lang === 'en-IN')
+      // If still not found, fallback to default
+      voiceRef.current = femaleVoice || voices[0] || null
+    }
+    // Some browsers load voices asynchronously
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = setVoice
+    }
+    setVoice()
+>>>>>>> cd8bbc9407d3aa9318ab6160642ae410f1b7da31
   }, [])
 
   const detectLanguage = async (text) => {
@@ -199,10 +224,18 @@ export default function ChatPage() {
   const speak = (text, lang) => {
     if (!window.speechSynthesis || !text) return
     const utterance = new SpeechSynthesisUtterance(text)
+<<<<<<< HEAD
     const voice = getBestVoice(lang)
     if (voice) {
       utterance.voice = voice
       utterance.lang = voice.lang
+=======
+    if (voiceRef.current) {
+      utterance.voice = voiceRef.current
+      utterance.lang = voiceRef.current.lang
+    } else {
+      utterance.lang = 'en-IN'
+>>>>>>> cd8bbc9407d3aa9318ab6160642ae410f1b7da31
     }
     utterance.rate = 1
     utterance.pitch = 1
