@@ -18,7 +18,7 @@ const Signin = () => {
         { withCredentials: true }
       );
       alert("Login successful");
-      navigate('/chat'); // ✅ Redirect to chatbot
+      navigate('/chat'); 
     } catch (err) {
       alert(err.response?.data?.msg || "Login failed");
     } finally {

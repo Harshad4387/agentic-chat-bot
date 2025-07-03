@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import VoiceInput from '../components/VoiceInput'
 import MessageBubble from '../components/MessageBubble'
 import { sendChatMessage } from '../utils/api'
@@ -8,12 +8,36 @@ export default function ChatPage() {
   const [chat, setChat] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const voiceRef = useRef(null)
+
+  // On mount, select the best Indian English female voice
+  useEffect(() => {
+    const setVoice = () => {
+      const voices = window.speechSynthesis.getVoices()
+      // Try to find a female Indian English voice
+      let femaleVoice = voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('female'))
+      // If not found, pick any Indian English voice
+      if (!femaleVoice) femaleVoice = voices.find(v => v.lang === 'en-IN')
+      // If still not found, fallback to default
+      voiceRef.current = femaleVoice || voices[0] || null
+    }
+    // Some browsers load voices asynchronously
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = setVoice
+    }
+    setVoice()
+  }, [])
 
   // ✅ Speak out bot responses
   const speak = (text) => {
     if (!window.speechSynthesis) return
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'en-US' // change to 'hi-IN' or 'mr-IN' if needed
+    if (voiceRef.current) {
+      utterance.voice = voiceRef.current
+      utterance.lang = voiceRef.current.lang
+    } else {
+      utterance.lang = 'en-IN'
+    }
     utterance.rate = 1
     utterance.pitch = 1
     window.speechSynthesis.cancel() // stop any ongoing speech
