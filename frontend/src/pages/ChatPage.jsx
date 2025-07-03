@@ -1,4 +1,3 @@
-// src/pages/ChatPage.jsx
 import React, { useState } from 'react'
 import VoiceInput from '../components/VoiceInput'
 import MessageBubble from '../components/MessageBubble'
@@ -19,14 +18,29 @@ export default function ChatPage() {
     addMessage('user', input)
     setInput('')
     setLoading(true)
-    const res = await sendChatMessage(input)
-    addMessage('bot', res.reply || res.message || '...')
-    setLoading(false)
+    try {
+      const res = await sendChatMessage(input)
+      addMessage('bot', res.reply || res.message || '...')
+    } catch (err) {
+      addMessage('bot', err.response?.data?.error || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleVoice = (text) => {
+  const handleVoice = async (text) => {
+    if (!text.trim()) return
+    addMessage('user', text)
     setInput(text)
-    handleSubmit(text)
+    setLoading(true)
+    try {
+      const res = await sendChatMessage(text)
+      addMessage('bot', res.reply || res.message || '...')
+    } catch (err) {
+      addMessage('bot', err.response?.data?.error || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -42,22 +56,22 @@ export default function ChatPage() {
 
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <textarea
-  rows={2}
-  value={input}
-  onChange={(e) => setInput(e.target.value)}
-  placeholder="Type your message..."
-  style={{
-    width: '10%',
-    height: '70px',
-    padding: '10px 12px',
-    fontSize: '1rem',
-    backgroundColor: '#2a2a2a',
-    color: 'white',
-    border: 'none',
-    borderRadius: '10px',
-    resize: 'none',
-  }}
-/>
+          rows={2}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          style={{
+            width: '10%',
+            height: '70px',
+            padding: '10px 12px',
+            fontSize: '1rem',
+            backgroundColor: '#2a2a2a',
+            color: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            resize: 'none',
+          }}
+        />
 
         <button onClick={handleSubmit}>Send</button>
         <VoiceInput onResult={handleVoice} />

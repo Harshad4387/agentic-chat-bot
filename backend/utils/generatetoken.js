@@ -8,6 +8,7 @@ const generatejwt = async (userid , res)=>{
     const options = {
         httpOnly : true,
         secure : true,
+        sameSite: "Lax"
     
     };
     res.cookie("jwt", token, options); 
