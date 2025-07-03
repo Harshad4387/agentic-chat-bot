@@ -1,3 +1,49 @@
+// {
+//   "name": "frontend",
+//   "private": true,
+//   "version": "0.0.0",
+//   "type": "module",
+//   "scripts": {
+//     "dev": "vite",
+//     "build": "vite build",
+//     "lint": "eslint .",
+//     "preview": "vite preview"
+//   },
+//   "dependencies": {
+//     "axios": "^1.10.0",
+//     "react": "^19.1.0",
+//     "react-dom": "^19.1.0",
+
+//     "react-speech-recognition": "^4.0.1"
+
+//     "react-router-dom": "^7.6.3"
+// >>>>>>> 96dc2932962769d7da0ee8553476b67c0ac9b9af
+//   },
+//   "devDependencies": {
+//     "@eslint/js": "^9.29.0",
+//     "@types/react": "^19.1.8",
+//     "@types/react-dom": "^19.1.6",
+// <<<<<<< HEAD
+//     "@vitejs/plugin-react": "^4.5.2",
+//     "autoprefixer": "^10.4.21",
+// =======
+//     "@vitejs/plugin-react": "^4.6.0",
+// >>>>>>> 96dc2932962769d7da0ee8553476b67c0ac9b9af
+//     "eslint": "^9.29.0",
+//     "eslint-plugin-react-hooks": "^5.2.0",
+//     "eslint-plugin-react-refresh": "^0.4.20",
+//     "globals": "^16.2.0",
+// <<<<<<< HEAD
+//     "postcss": "^8.5.6",
+//     "tailwindcss": "^4.1.11",
+//     "vite": "^7.0.0"
+// =======
+//     "vite": "^4.4.9"
+// >>>>>>> 96dc2932962769d7da0ee8553476b67c0ac9b9af
+//   }
+// }
+
+
 {
   "name": "frontend",
   "private": true,
@@ -10,15 +56,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-speech-recognition": "^4.0.1"
+    "react-speech-recognition": "^4.0.1",
+    "react-router-dom": "^7.6.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.5.2",
+    "@vitejs/plugin-react": "^4.6.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
