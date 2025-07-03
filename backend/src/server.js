@@ -23,6 +23,7 @@ app.use("/api/chat",chatroute);
 
   
 const port  = process.env.PORT || 3001
+console.log(port)
 
 
 app.listen(process.env.PORT ,()=>{

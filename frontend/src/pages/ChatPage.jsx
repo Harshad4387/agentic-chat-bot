@@ -9,6 +9,17 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // ✅ Speak out bot responses
+  const speak = (text) => {
+    if (!window.speechSynthesis) return
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'en-US' // change to 'hi-IN' or 'mr-IN' if needed
+    utterance.rate = 1
+    utterance.pitch = 1
+    window.speechSynthesis.cancel() // stop any ongoing speech
+    window.speechSynthesis.speak(utterance)
+  }
+
   const addMessage = (type, text) => {
     setChat(prev => [...prev, { type, text }])
   }
@@ -20,9 +31,13 @@ export default function ChatPage() {
     setLoading(true)
     try {
       const res = await sendChatMessage(input)
-      addMessage('bot', res.reply || res.message || '...')
+      const botReply = res.reply || res.message || '...'
+      addMessage('bot', botReply)
+      speak(botReply) // ✅ Speak bot response
     } catch (err) {
-      addMessage('bot', err.response?.data?.error || 'Something went wrong')
+      const errorMsg = err.response?.data?.error || 'Something went wrong'
+      addMessage('bot', errorMsg)
+      speak(errorMsg) // ✅ Speak error if needed
     } finally {
       setLoading(false)
     }
@@ -35,9 +50,13 @@ export default function ChatPage() {
     setLoading(true)
     try {
       const res = await sendChatMessage(text)
-      addMessage('bot', res.reply || res.message || '...')
+      const botReply = res.reply || res.message || '...'
+      addMessage('bot', botReply)
+      speak(botReply) // ✅ Speak bot response
     } catch (err) {
-      addMessage('bot', err.response?.data?.error || 'Something went wrong')
+      const errorMsg = err.response?.data?.error || 'Something went wrong'
+      addMessage('bot', errorMsg)
+      speak(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -72,7 +91,6 @@ export default function ChatPage() {
             resize: 'none',
           }}
         />
-
         <button onClick={handleSubmit}>Send</button>
         <VoiceInput onResult={handleVoice} />
       </div>
