@@ -1,149 +1,8 @@
-// import React, { useState, useEffect } from 'react'
-// import VoiceInput from '../components/VoiceInput'
-// import MessageBubble from '../components/MessageBubble'
-// import { sendChatMessage } from '../utils/api'
-// import '../styles/chat.css'
-
-// export default function ChatPage() {
-//   const [chat, setChat] = useState([])
-//   const [input, setInput] = useState('')
-//   const [loading, setLoading] = useState(false)
-//   const [voices, setVoices] = useState([])
-
-//   // Load available voices properly (async-safe)
-//   const loadVoices = () => {
-//     let allVoices = window.speechSynthesis.getVoices()
-//     if (allVoices.length > 0) {
-//       setVoices(allVoices)
-//     } else {
-//       // Retry once voices are loaded
-//       window.speechSynthesis.onvoiceschanged = () => {
-//         const updatedVoices = window.speechSynthesis.getVoices()
-//         setVoices(updatedVoices)
-//       }
-//     }
-//   }
-
-//   useEffect(() => {
-//     if ('speechSynthesis' in window) {
-//       loadVoices()
-//     }
-//   }, [])
-
-//   // ✅ Speak function with voice fallback
-//   const speak = (text) => {
-//   if (!window.speechSynthesis || !text) return;
-
-//   const utterance = new SpeechSynthesisUtterance(text);
-
-//   const allVoices = speechSynthesis.getVoices();
-
-//   // Language detection (simplified)
-//   const isHindi = /[\u0900-\u097F]/.test(text);   // Devanagari → Hindi
-//   const isMarathi = /पुणे|तापमान|आहे|सध्या|काय/.test(text); // Keywords specific to Marathi
-
-//   // Select preferred voice
-//   const voice =
-//     (isHindi && allVoices.find(v => v.lang === 'hi-IN')) ||
-//     (isMarathi && allVoices.find(v => v.lang === 'mr-IN')) ||
-//     allVoices.find(v => v.lang.startsWith('en')) ||
-//     allVoices[0];
-
-//   if (voice) {
-//     utterance.voice = voice;
-//     utterance.lang = voice.lang;
-//   }
-
-//   utterance.rate = 1;
-//   utterance.pitch = 1;
-//   speechSynthesis.cancel(); // Stop any current speech
-//   speechSynthesis.speak(utterance);
-// };
-
-//   const addMessage = (type, text) => {
-//     setChat(prev => [...prev, { type, text }])
-//   }
-
-//   const handleSubmit = async () => {
-//     if (!input.trim()) return
-//     addMessage('user', input)
-//     setInput('')
-//     setLoading(true)
-//     try {
-//       const res = await sendChatMessage(input)
-//       const botReply = res.reply || res.message || '...'
-//       addMessage('bot', botReply)
-//       speak(botReply)
-//     } catch (err) {
-//       const errorMsg = err.response?.data?.error || 'Something went wrong'
-//       addMessage('bot', errorMsg)
-//       speak(errorMsg)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   const handleVoice = async (text) => {
-//     if (!text.trim()) return
-//     addMessage('user', text)
-//     setInput(text)
-//     setLoading(true)
-//     try {
-//       const res = await sendChatMessage(text)
-//       const botReply = res.reply || res.message || '...'
-//       addMessage('bot', botReply)
-//       speak(botReply)
-//     } catch (err) {
-//       const errorMsg = err.response?.data?.error || 'Something went wrong'
-//       addMessage('bot', errorMsg)
-//       speak(errorMsg)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   return (
-//     <div className="chat-container">
-//       <h2>👵 Elderly Voice Chatbot</h2>
-
-//       <div className="chat-history">
-//         {chat.map((msg, idx) => (
-//           <MessageBubble key={idx} type={msg.type} text={msg.text} />
-//         ))}
-//         {loading && <MessageBubble type="bot" text="Typing..." />}
-//       </div>
-
-//       <div style={{ display: 'flex', gap: '0.5rem' }}>
-//         <textarea
-//           rows={2}
-//           value={input}
-//           onChange={(e) => setInput(e.target.value)}
-//           placeholder="Type your message..."
-//           style={{
-//             width: '10%',
-//             height: '70px',
-//             padding: '10px 12px',
-//             fontSize: '1rem',
-//             backgroundColor: '#2a2a2a',
-//             color: 'white',
-//             border: 'none',
-//             borderRadius: '10px',
-//             resize: 'none',
-//           }}
-//         />
-//         <button onClick={handleSubmit}>Send</button>
-//         <VoiceInput onResult={handleVoice} />
-//       </div>
-//     </div>
-//   )
-// }
-
 import React, { useState, useEffect } from 'react'
 import VoiceInput from '../components/VoiceInput'
 import MessageBubble from '../components/MessageBubble'
 import { sendChatMessage } from '../utils/api'
 import '../styles/chat.css'
-import axios from 'axios'
 
 export default function ChatPage() {
   const [chat, setChat] = useState([])
@@ -152,62 +11,115 @@ export default function ChatPage() {
   const [voices, setVoices] = useState([])
   const [userLang, setUserLang] = useState('en')
 
+  // 🔄 Load voices with retry
   useEffect(() => {
-    const interval = setInterval(() => {
+    const waitForVoices = () => {
       const allVoices = window.speechSynthesis.getVoices()
       if (allVoices.length > 0) {
         setVoices(allVoices)
-        clearInterval(interval)
+        console.log("✅ Voices loaded:", allVoices.map(v => `${v.name} - ${v.lang}`))
+      } else {
+        console.log("🔁 Waiting for voices...")
+        setTimeout(waitForVoices, 200)
       }
-    }, 200)
+    }
+    waitForVoices()
   }, [])
 
-  const detectLanguage = async (text) => {
-    try {
-      const res = await axios.post('https://libretranslate.com/detect', { q: text })
-      return res.data[0]?.language || 'en'
-    } catch {
-      return 'en'
-    }
+  // ✅ Offline Hindi/Marathi language detection
+const detectLanguage = (text) => {
+  // 🔹 Common Hindi and Marathi words
+  const hindiWords = [
+    "क्या", "कैसे", "कौन", "आप", "हैं", "हूँ", "हो", "था", "थी", "थोड़ा", "बहुत", "समय", "क्यों", "कब",
+    "अब", "बाद", "जैसे", "कहाँ", "यह", "वह", "मुझे", "तुम", "हम", "मैं", "मेरा", "मेरी", "अपना", "खुश",
+    "पढ़ाई", "खाना", "पानी", "स्कूल", "घर", "दोस्त", "शादी", "काम", "पढ़ना", "लिखना", "गाना", "नाचना",
+    "फिल्म", "टीवी", "देखना", "समझ", "सुनो", "बताओ", "बोलो", "बताइए", "चलिए", "कृपया", "धन्यवाद",
+    "सवाल", "जवाब", "सच", "झूठ", "भाषा", "हिंदी", "समस्या", "समाधान", "स्वागत", "स्वस्थ", "शुभ",
+    "रात", "दोपहर", "सुबह", "शाम", "अभी", "जल्दी", "धीरे", "बिलकुल", "जरूरी", "मदद", "कृपया",
+    "सिखाओ", "बचपन", "बूढ़ा", "नई", "पुराना", "अच्छा", "बुरा", "ठीक", "खत्म", "चुप", "जाओ", "ठहरो"
+  ]
+
+  const marathiWords = [
+    "काय", "कसा", "कशी", "तुम्ही", "आपण", "आहे", "होते", "झाले", "माझं", "नाव", "खूप", "छान", "असते",
+    "भूक", "झाली", "खाल्लं", "आई", "वडील", "शाळा", "सांग", "घर", "गेलो", "कुठे", "ये", "जाणे", "नाही",
+    "हो", "होते", "होणार", "शिकवले", "खरं", "खरंच", "गोड", "थोडं", "पाणी", "चहा", "भात", "भाजी", "विचार",
+    "शब्द", "समजलं", "करतो", "करते", "जमेल", "कृपया", "धन्यवाद", "संध्याकाळी", "सकाळी", "संध्या", "रात्र",
+    "भेट", "मनापासून", "माफ", "उद्या", "आज", "काल", "सोपं", "कठीण", "सांगितलं", "बोल", "शिकव", "जरा",
+    "थांब", "थांबा", "बघ", "पाह", "हस", "रड", "चिड", "शिक", "काम", "वाचन", "गाणं", "संगीत", "चित्रपट",
+    "मित्र", "मैत्री", "प्रेम", "भाऊ", "बहीण", "पुस्तक", "सत्य", "खोटं", "शिक्षण", "संदेश", "माहिती", "तपशील"
+  ]
+
+  const isHindi = hindiWords.some(word => text.includes(word))
+  const isMarathi = marathiWords.some(word => text.includes(word))
+
+  if (isHindi && !isMarathi) {
+    console.log("🧠 Detected: Hindi (via keyword)")
+    return 'hi'
   }
 
+  if (isMarathi && !isHindi) {
+    console.log("🧠 Detected: Marathi (via keyword)")
+    return 'mr'
+  }
+
+  if (isHindi && isMarathi) {
+    console.log("🧠 Detected: Shared script, falling back to Hindi")
+    return 'hi'
+  }
+
+  // Fallback using script (Unicode range for Devanagari)
+  const hasDevanagari = /[\u0900-\u097F]/.test(text)
+  if (hasDevanagari) {
+    console.log("🧠 Detected: Devanagari script, assuming Hindi")
+    return 'hi'
+  }
+
+  console.log("🧠 Detected: English (default fallback)")
+  return 'en'
+}
+
+
+  // 🔁 Translation disabled (no LibreTranslate)
   const translateText = async (text, from, to) => {
     if (from === to) return text
-    try {
-      const res = await axios.post('https://libretranslate.com/translate', {
-        q: text,
-        source: from,
-        target: to,
-        format: 'text'
-      })
-      return res.data.translatedText
-    } catch {
-      return text
-    }
+    return text // no real translation (could integrate later)
   }
 
-  const getBestVoice = (langCode) => {
-    if (!voices.length) return null
-    return (
-      voices.find(v => v.lang === langCode) ||
-      voices.find(v => v.lang.startsWith(langCode)) ||
-      voices.find(v => v.lang.startsWith('en')) ||
-      voices[0]
-    )
-  }
+  // 🔊 Voice speaker with language awareness
+  const speak = (text, lang = 'en') => {
+    const speakWhenReady = () => {
+      const allVoices = window.speechSynthesis.getVoices()
+      const lekha = allVoices.find(v => v.name.includes('Lekha'))
 
-  const speak = (text, lang) => {
-    if (!window.speechSynthesis || !text) return
-    const utterance = new SpeechSynthesisUtterance(text)
-    const voice = getBestVoice(lang)
-    if (voice) {
-      utterance.voice = voice
-      utterance.lang = voice.lang
+      const finalVoice = (lang === 'hi' || lang === 'mr') && lekha
+        ? lekha
+        : allVoices.find(v => v.lang === lang) ||
+          allVoices.find(v => v.lang.startsWith(lang)) ||
+          allVoices.find(v => v.lang.startsWith('en')) ||
+          allVoices[0]
+
+      if (!finalVoice) {
+        console.warn("❌ No voice found for lang:", lang)
+        return
+      }
+
+      const utter = new SpeechSynthesisUtterance(text)
+      utter.voice = finalVoice
+      utter.lang = finalVoice.lang
+      utter.rate = 1
+      utter.pitch = 1
+
+      console.log(`🗣️ Speaking using: ${finalVoice.name} (${finalVoice.lang})`)
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(utter)
     }
-    utterance.rate = 1
-    utterance.pitch = 1
-    window.speechSynthesis.cancel()
-    window.speechSynthesis.speak(utterance)
+
+    if (!voices.length) {
+      console.log("⏳ Voices not ready, retrying...")
+      setTimeout(() => speak(text, lang), 200)
+    } else {
+      speakWhenReady()
+    }
   }
 
   const addMessage = (type, text) => {
@@ -215,8 +127,9 @@ export default function ChatPage() {
   }
 
   const processMessage = async (text) => {
-    const detectedLang = await detectLanguage(text)
+    const detectedLang = detectLanguage(text)
     setUserLang(detectedLang)
+    console.log("🌐 Detected Language:", detectedLang)
 
     const translatedToEnglish = await translateText(text, detectedLang, 'en')
     const response = await sendChatMessage(translatedToEnglish)
