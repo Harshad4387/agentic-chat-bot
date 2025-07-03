@@ -1,4 +1,4 @@
-const User = require('../models/User.js');
+const User = require('../models/user.model.js');
 const bcrypt = require("bcryptjs");
 const generatejwt = require("../utils/generatetoken.js");
 
@@ -99,5 +99,7 @@ const checkauth = async (req, res) => {
   }
 };
 
+// NOTE: updateprofile is removed since your User model doesn't include profilePic.
+// You can add that field later and reimplement it if needed.
 
 module.exports = { signup, login, logout, checkauth };

@@ -1,4 +1,4 @@
-require("dotenv").config("");
+require("dotenv").config();
 const express = require("express");
 const app = express();
 app.use(express.json({limit : "10mb"}));
@@ -8,15 +8,18 @@ const cookie = require("cookie-parser");
 app.use(cookie());
 
 const cors = require('cors');
+
+
 app.use(cors({
-    origin : "http://localhost:5173",
-    credentials :true 
+  origin: true,         // allows dynamic origin (all)
+  credentials: true     // allows cookies & auth headers
+}));
 
-}))
+const authroute = require("../routes/auth.route.js");
+app.use("/api/auth",authroute);
 
-
-// const authroute = require("../routes/auth.route.js");
-// app.use("/api/auth",authroute);
+const chatroute = require("../routes/chat.route.js");
+app.use("/api/chat",chatroute);
 
   
 const port  = process.env.PORT || 3001
